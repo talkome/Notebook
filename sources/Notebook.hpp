@@ -8,6 +8,7 @@
 #include "Direction.hpp"
 #define ROW_CAPACITY 100
 #define FIRST_PAGE 0
+#define MAX 10
 
 using namespace std;
 

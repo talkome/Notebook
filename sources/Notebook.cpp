@@ -4,16 +4,17 @@
 #include "Notebook.hpp"
 
 void ariel::Notebook::write(int page, int row, int column, ariel::Direction direction, string content) {
-    if(row < 0 || row > ROW_CAPACITY){
+    if(row < 0 || row > ROW_CAPACITY-1){
         throw invalid_argument("Invalid Row");
     }
 
-    if(row < content.size()){
-        throw invalid_argument("Invalid Text");
+    if(column < 0 || column > ROW_CAPACITY-1){
+        throw invalid_argument("Invalid Column");
     }
 
-    if(column < 0 || column > ROW_CAPACITY){
-        throw invalid_argument("Invalid Column");
+    int size = content.size();
+    if(size <= 0 || size > ROW_CAPACITY-column || size > MAX){
+        throw invalid_argument("Invalid Text");
     }
 
     if(page < FIRST_PAGE){
@@ -29,20 +30,12 @@ void ariel::Notebook::write(int page, int row, int column, ariel::Direction dire
         addRow(row,page);
     }
 
-    const int magic_num1 = 33;
-    const int magic_num2 = 126;
-    if (content[0] < magic_num1 || content[0] > magic_num2) {
-        throw invalid_argument("Invalid Character");
-    }
-
-    vector<char> s = {'\n','\t', ' ', '\r','\a','\b','\f','\v','~'};
+    vector<char> s = {'\n','\t', ' ', '\r','\a','\b','\f','\v','_','~'};
     for (unsigned long i = 0; i < s.size(); ++i) {
         if (content.find(s[i]) != string::npos) {
             throw invalid_argument("Invalid Character");
         }
     }
-
-    int size = content.size();
 
     unsigned long new_row = 0;
     unsigned long new_col = 0;
@@ -52,7 +45,6 @@ void ariel::Notebook::write(int page, int row, int column, ariel::Direction dire
     switch (direction){
         case Direction::Horizontal:
             for (int i = 0; i < size; ++i) {
-                int sum = 0;
                 if(row >= notebook_map[page].rbegin()->first){
                     addRow(row+1, page);
                 }
@@ -93,11 +85,7 @@ void ariel::Notebook::write(int page, int row, int column, ariel::Direction dire
 }
 
 string ariel::Notebook::read(int page, int row, int column, ariel::Direction direction, int length) {
-    if (notebook_map.find(page) == notebook_map.end()) {
-        throw invalid_argument("This Page Is Not Existing");
-    }
-
-    if(row < 0 || row > ROW_CAPACITY){
+    if(row < 0 || row > ROW_CAPACITY+1){
         throw invalid_argument("Invalid Row");
     }
 
@@ -109,8 +97,16 @@ string ariel::Notebook::read(int page, int row, int column, ariel::Direction dir
         throw invalid_argument("Invalid Page");
     }
 
-    if(length <= 0){
+    if(length > ROW_CAPACITY){
+        throw invalid_argument("Out of Bound");
+    }
+
+    if(length <= 0 || length > ROW_CAPACITY-column){
         throw invalid_argument("Invalid Length");
+    }
+
+    if (notebook_map.find(page) == notebook_map.end()) {
+        throw invalid_argument("This Page Is Not Existing");
     }
 
     if (notebook_map[page].find(row) == notebook_map[page].end()) {
@@ -120,7 +116,6 @@ string ariel::Notebook::read(int page, int row, int column, ariel::Direction dir
     string result;
     unsigned long new_row = 0;
     unsigned long new_col = 0;
-    unsigned long j = 0;
     int sum = 0;
 
     switch (direction){
@@ -146,7 +141,7 @@ string ariel::Notebook::read(int page, int row, int column, ariel::Direction dir
                 }
                 sum = row+i;
                 new_row = (unsigned long)sum;
-                new_col = (unsigned long) column;
+                new_col = (unsigned long)column;
                 result += notebook_map[page][new_row][new_col]; // changeV
             }
             break;
@@ -157,11 +152,11 @@ string ariel::Notebook::read(int page, int row, int column, ariel::Direction dir
 }
 
 void ariel::Notebook::erase(int page, int row, int column, ariel::Direction direction, int length) {
-    if (notebook_map.find(page) == notebook_map.end()) {
-        throw invalid_argument("This Page Is Not Existing");
+    if(length <= 0 || length > ROW_CAPACITY-column || length > notebook_map[page].size()){
+        throw invalid_argument("Invalid Length");
     }
 
-    if(row < 0 || row > ROW_CAPACITY){
+    if(row < 0 || row > ROW_CAPACITY+1){
         throw invalid_argument("Invalid Row");
     }
 
@@ -173,8 +168,8 @@ void ariel::Notebook::erase(int page, int row, int column, ariel::Direction dire
         throw invalid_argument("Invalid Page");
     }
 
-    if(length <= 0){
-        throw invalid_argument("Invalid Length");
+    if (notebook_map.find(page) == notebook_map.end()) {
+        throw invalid_argument("This Page Is Not Existing");
     }
 
     if (notebook_map[page].find(row) == notebook_map[page].end()) {
