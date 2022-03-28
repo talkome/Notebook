@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 #include "Direction.hpp"
-#define COL_CAPACITY 100
+#define ROW_CAPACITY 100
 #define FIRST_PAGE 0
 
 using namespace std;
@@ -20,7 +20,7 @@ namespace ariel {
 
         //Constructor
         Notebook(){
-            vector<char> new_row(COL_CAPACITY+1,'_');
+            vector<char> new_row(ROW_CAPACITY+1,'_');
             notebook_map[FIRST_PAGE].insert(pair<int, vector<char>>(FIRST_PAGE, new_row));
         };
 

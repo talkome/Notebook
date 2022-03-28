@@ -4,16 +4,24 @@
 #include "Notebook.hpp"
 
 void ariel::Notebook::write(int page, int row, int column, ariel::Direction direction, string content) {
-    if(row > COL_CAPACITY+1 || row < 0){
+    if(row < 0 || row > ROW_CAPACITY){
         throw invalid_argument("Invalid Row");
     }
 
-    if(page <= FIRST_PAGE){
+    if(row < content.size()){
+        throw invalid_argument("Invalid Text");
+    }
+
+    if(column < 0 || column > ROW_CAPACITY){
+        throw invalid_argument("Invalid Column");
+    }
+
+    if(page < FIRST_PAGE){
         throw invalid_argument("Invalid Page");
     }
 
     if (notebook_map.find(page) == notebook_map.end()) {
-        vector<char> new_row(COL_CAPACITY,'_');
+        vector<char> new_row(ROW_CAPACITY,'_');
         notebook_map[page].insert(pair<int,vector<char>>(FIRST_PAGE,new_row));
     }
 
@@ -21,10 +29,30 @@ void ariel::Notebook::write(int page, int row, int column, ariel::Direction dire
         addRow(row,page);
     }
 
+    const int magic_num1 = 33;
+    const int magic_num2 = 126;
+    if (content[0] < magic_num1 || content[0] > magic_num2) {
+        throw invalid_argument("Invalid Character");
+    }
+
+    vector<char> s = {'\n','\t', ' ', '\r','\a','\b','\f','\v','~'};
+    for (unsigned long i = 0; i < s.size(); ++i) {
+        if (content.find(s[i]) != string::npos) {
+            throw invalid_argument("Invalid Character");
+        }
+    }
+
     int size = content.size();
+
+    unsigned long new_row = 0;
+    unsigned long new_col = 0;
+    unsigned long j = 0;
+    int sum = 0;
+
     switch (direction){
         case Direction::Horizontal:
             for (int i = 0; i < size; ++i) {
+                int sum = 0;
                 if(row >= notebook_map[page].rbegin()->first){
                     addRow(row+1, page);
                 }
@@ -32,8 +60,12 @@ void ariel::Notebook::write(int page, int row, int column, ariel::Direction dire
                     row += 1;
                     column = 0;
                 }
-                if(notebook_map[page][row][column+i] == '_'){
-                    notebook_map[page][row][column+i] = content[i];
+                sum = column+i;
+                j = (unsigned long)i;
+                new_row = (unsigned long)row;
+                new_col = (unsigned long)sum;
+                if(notebook_map[page][new_row][new_col] == '_'){ // changeV
+                    notebook_map[page][new_row][new_col] = content[j]; // changeV
                 } else {
                     throw invalid_argument("Cannot writing");
                 }
@@ -44,9 +76,12 @@ void ariel::Notebook::write(int page, int row, int column, ariel::Direction dire
                 if(row+i >= notebook_map[page].rbegin()->first){
                     addRow(row+i, page);
                 }
-
-                if(notebook_map[page][row+i][column] == '_'){
-                    notebook_map[page][row+i][column] = content[i];
+                sum = row+i;
+                j = (unsigned long)i;
+                new_row = (unsigned long)sum;
+                new_col = (unsigned long) column;
+                if(notebook_map[page][new_row][new_col] == '_'){ // changeV
+                    notebook_map[page][new_row][new_col] = content[j]; // changeV
                 } else {
                     throw invalid_argument("Cannot writing");
                 }
@@ -62,12 +97,20 @@ string ariel::Notebook::read(int page, int row, int column, ariel::Direction dir
         throw invalid_argument("This Page Is Not Existing");
     }
 
-    if(row > COL_CAPACITY+1 || row < 0){
+    if(row < 0 || row > ROW_CAPACITY){
         throw invalid_argument("Invalid Row");
     }
 
-    if(page <= FIRST_PAGE){
+    if(column < 0 || column > ROW_CAPACITY){
+        throw invalid_argument("Invalid Column");
+    }
+
+    if(page < FIRST_PAGE){
         throw invalid_argument("Invalid Page");
+    }
+
+    if(length <= 0){
+        throw invalid_argument("Invalid Length");
     }
 
     if (notebook_map[page].find(row) == notebook_map[page].end()) {
@@ -75,6 +118,11 @@ string ariel::Notebook::read(int page, int row, int column, ariel::Direction dir
     }
 
     string result;
+    unsigned long new_row = 0;
+    unsigned long new_col = 0;
+    unsigned long j = 0;
+    int sum = 0;
+
     switch (direction){
         case Direction::Horizontal:
             for (int i = 0; i < length; ++i) {
@@ -85,7 +133,10 @@ string ariel::Notebook::read(int page, int row, int column, ariel::Direction dir
                     row += 1;
                     column = 0;
                 }
-                result += notebook_map[page][row][column+i];
+                sum = column+i;
+                new_row = (unsigned long)row;
+                new_col = (unsigned long)sum;
+                result += notebook_map[page][new_row][new_col]; // changeV
             }
             break;
         case Direction::Vertical:
@@ -93,7 +144,10 @@ string ariel::Notebook::read(int page, int row, int column, ariel::Direction dir
                 if(row+i >= notebook_map[page].rbegin()->first){
                     addRow(row+i,page);
                 }
-                result += notebook_map[page][row+i][column];
+                sum = row+i;
+                new_row = (unsigned long)sum;
+                new_col = (unsigned long) column;
+                result += notebook_map[page][new_row][new_col]; // changeV
             }
             break;
         default:
@@ -107,17 +161,30 @@ void ariel::Notebook::erase(int page, int row, int column, ariel::Direction dire
         throw invalid_argument("This Page Is Not Existing");
     }
 
-    if(row > COL_CAPACITY+1 || row < 0){
+    if(row < 0 || row > ROW_CAPACITY){
         throw invalid_argument("Invalid Row");
+    }
+
+    if(column < 0 || column > ROW_CAPACITY){
+        throw invalid_argument("Invalid Column");
     }
 
     if(page < FIRST_PAGE){
         throw invalid_argument("Invalid Page");
     }
 
+    if(length <= 0){
+        throw invalid_argument("Invalid Length");
+    }
+
     if (notebook_map[page].find(row) == notebook_map[page].end()) {
         addRow(row,page);
     }
+
+    unsigned long new_row = 0;
+    unsigned long new_col = 0;
+    unsigned long j = 0;
+    int sum = 0;
 
     switch (direction){
         case Direction::Horizontal:
@@ -129,7 +196,10 @@ void ariel::Notebook::erase(int page, int row, int column, ariel::Direction dire
                     row += 1;
                     column = 0;
                 }
-                notebook_map[page][row][column+i] = '~';
+                sum = column+i;
+                new_row = (unsigned long)row;
+                new_col = (unsigned long)sum;
+                notebook_map[page][new_row][new_col] = '~'; // changeV
             }
             break;
         case Direction::Vertical:
@@ -137,7 +207,10 @@ void ariel::Notebook::erase(int page, int row, int column, ariel::Direction dire
                 if(row+i >= notebook_map[page].rbegin()->first){
                     addRow(row+i+1,page);
                 }
-                notebook_map[page][row+i][column] = '~';
+                sum = row+i;
+                new_row = (unsigned long)sum;
+                new_col = (unsigned long) column;
+                notebook_map[page][new_row][new_col] = '~'; // changeV
             }
             break;
         default:
@@ -164,6 +237,6 @@ void ariel::Notebook::show(int page) {
 }
 
 void ariel::Notebook::addRow(int row, int page) {
-    vector<char> new_row(COL_CAPACITY,'_');
+    vector<char> new_row(ROW_CAPACITY,'_');
     notebook_map[page].insert(pair<int, vector<char>>(row, new_row));
 }
