@@ -8,7 +8,7 @@ void ariel::Notebook::write(int page, int row, int column, ariel::Direction dire
         throw invalid_argument("Invalid Row");
     }
 
-    if(page < FIRST_PAGE){
+    if(page <= FIRST_PAGE){
         throw invalid_argument("Invalid Page");
     }
 
@@ -66,7 +66,7 @@ string ariel::Notebook::read(int page, int row, int column, ariel::Direction dir
         throw invalid_argument("Invalid Row");
     }
 
-    if(page < FIRST_PAGE){
+    if(page <= FIRST_PAGE){
         throw invalid_argument("Invalid Page");
     }
 
@@ -146,6 +146,14 @@ void ariel::Notebook::erase(int page, int row, int column, ariel::Direction dire
 }
 
 void ariel::Notebook::show(int page) {
+    if(page <= FIRST_PAGE){
+        throw invalid_argument("Invalid Page");
+    }
+
+    if (notebook_map.find(page) == notebook_map.end()) {
+        throw invalid_argument("This Page Is Not Exists");
+    }
+
     for(const auto& elem : notebook_map[page]){
         string result;
         for (char i : elem.second) {
