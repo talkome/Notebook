@@ -8,7 +8,6 @@
 #include "Direction.hpp"
 #define ROW_CAPACITY 100
 #define FIRST_PAGE 0
-#define MAX 10
 
 using namespace std;
 
@@ -19,14 +18,11 @@ namespace ariel {
     public:
         map<int, map<int, vector<char>>> notebook_map;
 
-        //Constructor
-        Notebook(){
-            vector<char> new_row(ROW_CAPACITY+1,'_');
-            notebook_map[FIRST_PAGE].insert(pair<int, vector<char>>(FIRST_PAGE, new_row));
-        };
+        // Constructor
+        Notebook(){}
 
-        //Destructor
-        ~Notebook(){};
+        // Destructor
+        ~Notebook(){}
 
         void addRow(int row, int page);
         void write(int page, int row, int column, Direction direction, string content);

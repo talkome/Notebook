@@ -29,8 +29,7 @@ void ariel::Notebook::write(int page, int row, int column, ariel::Direction dire
     }
 
     if (notebook_map.find(page) == notebook_map.end()) {
-        vector<char> new_row(ROW_CAPACITY,'_');
-        notebook_map[page].insert(pair<int,vector<char>>(FIRST_PAGE,new_row));
+        addRow(0,page);
     }
 
     if (notebook_map[page].find(row) == notebook_map[page].end()) {
