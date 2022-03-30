@@ -16,10 +16,12 @@ namespace ariel {
     class Notebook {
 
     public:
-        map<int, map<int, vector<char>>> notebook_map;
+        map<int, map<int, string>> papers_map;
 
         // Constructor
-        Notebook(){}
+        Notebook(){
+            addRow(0,0);
+        }
 
         // Destructor
         ~Notebook(){}
